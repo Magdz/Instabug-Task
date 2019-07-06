@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/adjust/rmq"
 )
 
-type Chat struct {
-
+type Message struct {
+	AppToken string
+	ChatID string
+	Text string
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -24,6 +27,29 @@ func createChat(w http.ResponseWriter, r *http.Request) {
 	queue := connection.OpenQueue("chats")
 
 	queue.Publish(token)
+	fmt.Fprintf(w, "Accepted!")
+}
+
+func createMsg(w http.ResponseWriter, r *http.Request) {
+	var msg Message
+
+	vars := mux.Vars(r)
+	msg.ChatID = vars["id"]
+	msg.AppToken = vars["token"]
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&msg)
+	defer r.Body.Close()
+	
+	j, err := json.Marshal(msg)
+	if err != nil {
+	}
+
+	connection := rmq.OpenConnection("worker", "tcp", "localhost:6379", 1)
+	queue := connection.OpenQueue("messages")
+	
+	queue.Publish(string(j))
+	fmt.Fprintf(w, "Accepted!")
 }
 
 func handleRequests() {
@@ -31,6 +57,7 @@ func handleRequests() {
 
 	router.HandleFunc("/", homePage).Methods("GET")
 	router.HandleFunc("/applications/{token}/chats", createChat).Methods("POST")
+	router.HandleFunc("/applications/{token}/chats/{id}/messages", createMsg).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8081", router))
 }
