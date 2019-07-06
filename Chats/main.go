@@ -23,7 +23,7 @@ func createChat(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	token := vars["token"]
 
-	connection := rmq.OpenConnection("worker", "tcp", "localhost:6379", 1)
+	connection := rmq.OpenConnection("publisher", "tcp", "172.17.0.4:6379", 1)
 	queue := connection.OpenQueue("chats")
 
 	queue.Publish(token)
@@ -45,7 +45,7 @@ func createMsg(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 	}
 
-	connection := rmq.OpenConnection("worker", "tcp", "localhost:6379", 1)
+	connection := rmq.OpenConnection("publisher", "tcp", "172.17.0.4:6379", 1)
 	queue := connection.OpenQueue("messages")
 	
 	queue.Publish(string(j))
