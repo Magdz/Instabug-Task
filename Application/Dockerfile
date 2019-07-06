@@ -21,6 +21,4 @@ WORKDIR $APP_ROOT
 COPY . $APP_ROOT
 
 EXPOSE  3000
-RUN rake db:create
-RUN rails db:migrate
-CMD rm -f tmp/pids/server.pid && rails s -b '0.0.0.0'
+CMD rake db:create && rails db:migrate && rm -f tmp/pids/server.pid && rails s -b '0.0.0.0'
