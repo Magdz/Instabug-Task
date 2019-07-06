@@ -17,3 +17,14 @@ services:
     depends_on:
       - db
 
+  queue:
+    image: redis
+    restart: always
+
+  chat:
+    image: magdz/insta-chat
+    ports:
+      - "8081:8081"
+    restart: always
+    depends_on:
+      - queue
