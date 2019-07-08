@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/adjust/rmq"
+	"github.com/kavu/go-resque" // Import this package
+	_ "github.com/kavu/go-resque/godis" // Use godis driver
+	"github.com/simonz05/godis/redis" // Redis client from godis package
 )
 
 type Message struct {
@@ -23,10 +25,14 @@ func createChat(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	token := vars["token"]
 
-	connection := rmq.OpenConnection("publisher", "tcp", "queue:6379", 1)
-	queue := connection.OpenQueue("chats")
+	client := redis.New("tcp:127.0.0.1:6379", 0, "")
+	enqueuer := resque.NewRedisEnqueuer("godis", client, "resque:")
+	
+	_, err := enqueuer.Enqueue("resque:queue:chats", token)
+	if err != nil {
+		panic(err)
+	}
 
-	queue.Publish(token)
 	fmt.Fprintf(w, "Accepted!")
 }
 
@@ -45,10 +51,15 @@ func createMsg(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 	}
 
-	connection := rmq.OpenConnection("publisher", "tcp", "queue:6379", 1)
-	queue := connection.OpenQueue("messages")
 	
-	queue.Publish(string(j))
+	client := redis.New("tcp:127.0.0.1:6379", 0, "")
+	enqueuer := resque.NewRedisEnqueuer("godis", client, "resque:")
+	
+	_, err = enqueuer.Enqueue("resque:queue:messages", string(j))
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Fprintf(w, "Accepted!")
 }
 
