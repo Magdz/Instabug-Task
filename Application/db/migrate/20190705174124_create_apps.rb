@@ -3,6 +3,7 @@ class CreateApps < ActiveRecord::Migration[5.2]
     create_table :apps do |t|
       t.string :name
       t.string :token
+      t.integer :chats_count
 
       t.timestamps
     end
