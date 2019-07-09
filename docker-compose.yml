@@ -7,6 +7,10 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: P@ssw0rd
 
+  queue:
+    image: redis
+    restart: always
+
   app:
     image: magdz/insta-app
     ports:
@@ -16,15 +20,13 @@ services:
       MYSQL_ROOT_PASSWORD: P@ssw0rd
     depends_on:
       - db
+      - queue
 
-  queue:
-    image: redis
+  worker:
+    image: magdz/insta-worker
     restart: always
-
-  chat:
-    image: magdz/insta-chat
-    ports:
-      - "8081:8081"
-    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: P@ssw0rd
     depends_on:
+      - db
       - queue
