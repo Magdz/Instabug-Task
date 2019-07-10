@@ -14,6 +14,9 @@ class AppController < ApplicationController
             rescue
                 puts "Database exists"
             end
+
+            redis = Redis.new(:host => 'queue')
+            redis.set("app_" + @app.id.to_s, 0)
             
             render json: @app, status: :ok
         end
