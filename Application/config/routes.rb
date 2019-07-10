@@ -6,4 +6,6 @@ Rails.application.routes.draw do
   post 'applications/:app_token/chats', to: 'chats#create'
 
   post 'applications/:app_token/chats/:chat_id/messages', to: 'messages#create'
+  get  'applications/:app_token/chats/:chat_id/messages/search', to: 'messages#search'
+
 end
